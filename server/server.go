@@ -26,6 +26,8 @@ type Server struct {
 	FrameWidth  float64
 	FrameHeight float64
 
+	Baseurl string
+
 	Rotate int
 
 	NoWebGL   bool
@@ -50,16 +52,20 @@ func (s *Server) ListenAndServe() error {
 		basic = auth.NewBasicAuthenticator(realm, auth.HtpasswdFileProvider(s.Htpasswd))
 	}
 
-	http.Handle("/html", newAuthHandler(handlers.NewHTML(s.FrameWidth, s.FrameHeight, s.NoWebGL), basic))
-	http.Handle("/jpeg", newAuthHandler(handlers.NewJPEG(s.Reader), basic))
-	http.Handle("/mjpeg", newAuthHandler(handlers.NewMJPEG(s.Reader, s.Delay), basic))
-	http.Handle("/socket", newAuthHandler(handlers.NewSocket(s.Reader, s.Delay), basic))
+	if s.Baseurl != "/" {
+		s.Baseurl = "/" + s.Baseurl + "/"
+	}
 
-	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+	http.Handle(s.Baseurl+"html", newAuthHandler(handlers.NewHTML(s.FrameWidth, s.FrameHeight, s.NoWebGL), basic))
+	http.Handle(s.Baseurl+"jpeg", newAuthHandler(handlers.NewJPEG(s.Reader), basic))
+	http.Handle(s.Baseurl+"mjpeg", newAuthHandler(handlers.NewMJPEG(s.Reader, s.Delay), basic))
+	http.Handle(s.Baseurl+"socket", newAuthHandler(handlers.NewSocket(s.Reader, s.Delay), basic))
+
+	http.HandleFunc(s.Baseurl+"favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	http.Handle("/", newAuthHandler(handlers.NewIndex(), basic))
+	http.Handle(s.Baseurl, newAuthHandler(handlers.NewIndex(s.Baseurl), basic))
 
 	srv := &http.Server{}
 

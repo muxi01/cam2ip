@@ -28,6 +28,7 @@ func main() {
 	flag.BoolVar(&srv.Timestamp, "timestamp", false, "Draws timestamp on images")
 	flag.StringVar(&srv.Bind, "bind-addr", ":56000", "Bind address")
 	flag.StringVar(&srv.Htpasswd, "htpasswd-file", "", "Path to htpasswd file, if empty auth is disabled")
+	flag.StringVar(&srv.Baseurl, "base-url", "/", "Used to distinguish between the different applications")
 
 	envy.Parse("CAM2IP")
 	flag.Parse()
